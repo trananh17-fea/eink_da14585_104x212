@@ -4,8 +4,8 @@
 #include "stdint.h"
 #include "string.h"
 
-#define YEAR0 (2000)       /* The first year */
-#define EPOCH_YR (2026)    /* EPOCH = Jan 1 2026 00:00:00 */
+#define YEAR0 (0)          /* Năm gốc để hiển thị */
+#define EPOCH_YR (1970)    /* Gốc thời gian Unix chuẩn */
 #define SEC_PER_DY (86400) // seconds per day
 #define SEC_PER_HR (3600)  // seconds per hour
 

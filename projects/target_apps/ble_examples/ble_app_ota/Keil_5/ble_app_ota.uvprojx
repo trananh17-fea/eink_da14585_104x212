@@ -1357,16 +1357,6 @@
               <FilePath>..\src\Fonts\font12.c</FilePath>
             </File>
             <File>
-              <FileName>font12CN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font12CN.c</FilePath>
-            </File>
-            <File>
-              <FileName>font16CN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font16CN.c</FilePath>
-            </File>
-            <File>
               <FileName>font20.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\Fonts\font20.c</FilePath>
@@ -1377,9 +1367,24 @@
               <FilePath>..\src\Fonts\font24.c</FilePath>
             </File>
             <File>
-              <FileName>font24CN.c</FileName>
+              <FileName>font12VI.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font24CN.c</FilePath>
+              <FilePath>..\src\Fonts\font12VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>font16VI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\Fonts\font16VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>font24VI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\Fonts\font24VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>fonts.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\src\Fonts\fonts.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -2746,16 +2751,6 @@
               <FilePath>..\src\Fonts\font12.c</FilePath>
             </File>
             <File>
-              <FileName>font12CN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font12CN.c</FilePath>
-            </File>
-            <File>
-              <FileName>font16CN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font16CN.c</FilePath>
-            </File>
-            <File>
               <FileName>font20.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\Fonts\font20.c</FilePath>
@@ -2766,9 +2761,24 @@
               <FilePath>..\src\Fonts\font24.c</FilePath>
             </File>
             <File>
-              <FileName>font24CN.c</FileName>
+              <FileName>font12VI.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font24CN.c</FilePath>
+              <FilePath>..\src\Fonts\font12VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>font16VI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\Fonts\font16VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>font24VI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\Fonts\font24VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>fonts.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\src\Fonts\fonts.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -4033,16 +4043,6 @@
               <FilePath>..\src\Fonts\font12.c</FilePath>
             </File>
             <File>
-              <FileName>font12CN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font12CN.c</FilePath>
-            </File>
-            <File>
-              <FileName>font16CN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font16CN.c</FilePath>
-            </File>
-            <File>
               <FileName>font20.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\Fonts\font20.c</FilePath>
@@ -4053,9 +4053,24 @@
               <FilePath>..\src\Fonts\font24.c</FilePath>
             </File>
             <File>
-              <FileName>font24CN.c</FileName>
+              <FileName>font12VI.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font24CN.c</FilePath>
+              <FilePath>..\src\Fonts\font12VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>font16VI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\Fonts\font16VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>font24VI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\Fonts\font24VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>fonts.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\src\Fonts\fonts.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -5320,16 +5335,6 @@
               <FilePath>..\src\Fonts\font12.c</FilePath>
             </File>
             <File>
-              <FileName>font12CN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font12CN.c</FilePath>
-            </File>
-            <File>
-              <FileName>font16CN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font16CN.c</FilePath>
-            </File>
-            <File>
               <FileName>font20.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\Fonts\font20.c</FilePath>
@@ -5340,9 +5345,24 @@
               <FilePath>..\src\Fonts\font24.c</FilePath>
             </File>
             <File>
-              <FileName>font24CN.c</FileName>
+              <FileName>font12VI.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\Fonts\font24CN.c</FilePath>
+              <FilePath>..\src\Fonts\font12VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>font16VI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\Fonts\font16VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>font24VI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\Fonts\font24VI.c</FilePath>
+            </File>
+            <File>
+              <FileName>fonts.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\src\Fonts\fonts.h</FilePath>
             </File>
           </Files>
         </Group>

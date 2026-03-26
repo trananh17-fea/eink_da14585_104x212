@@ -150,26 +150,12 @@ Paint_NewImage(epd_buffer, EPD_2IN13_V2_WIDTH, EPD_2IN13_V2_HEIGHT, 270, WHITE);
             Paint_SelectImage(epd_buffer);
             Paint_SetMirroring(MIRROR_VERTICAL);
             Paint_Clear(WHITE);
-            
-            sprintf(buf, "%d-%02d-%02d", g_tm.tm_year + YEAR0, g_tm.tm_mon + 1, g_tm.tm_mday);                   //年月日
+
+            sprintf(buf, "%d-%02d-%02d", g_tm.tm_mday,g_tm.tm_mon + 1, g_tm.tm_year + YEAR0);                   //年月日
             EPD_DrawUTF8(5, 1, 1, buf, EPD_ASCII_11X16, EPD_FontUTF8_16x16, BLACK, WHITE);
-            sprintf(buf, "星期%s", WEEKCN[g_tm.tm_wday]);                                                        //星期
+            sprintf(buf, "%s", WEEK_VN[g_tm.tm_wday]);                                                        //星期
             EPD_DrawUTF8(5 + 125, 1, 1, buf, EPD_ASCII_11X16, EPD_FontUTF8_16x16, BLACK, WHITE);
-            //if (g_tm.tm_hour<10){
-            //    sprintf(buf, "%01d", g_tm.tm_hour);
-            //    EPD_DrawUTF8(10, 20 + 2, 5, buf, EPD_40X80_TABLE, EPD_FontUTF8_24x24, BLACK, WHITE);
-            //    EPD_DrawUTF8(10 + 86 - 50, 20 + 2, 5, ":", EPD_40X80_TABLE, EPD_FontUTF8_24x24, BLACK, WHITE);
-            //    sprintf(buf, "%02d", g_tm.tm_min);
-            //    EPD_DrawUTF8(10 + 86 + 20-30, 20 + 2, 5, buf, EPD_40X80_TABLE, EPD_FontUTF8_24x24, BLACK, WHITE); 
-            //}else 
             {
-               //sprintf(buf, "日");
-                //sprintf(buf, "%02d", g_tm.tm_hour);
-                //EPD_DrawUTF8(5, 22, 0, buf, EPD_40X80_TABLE, EPD_FontUTF8_24x24, BLACK, WHITE);
-                //EPD_DrawUTF8(81, 22, 0, ":", EPD_40X80_TABLE, EPD_FontUTF8_24x24, BLACK, WHITE);
-                //sprintf(buf, "%02d", g_tm.tm_min);
-                //EPD_DrawUTF8(115, 22, 0, buf, EPD_40X80_TABLE, EPD_FontUTF8_24x24, BLACK, WHITE);
-                // 1. 创建一个 Draw_Time_String 函数真正需要的 `struct tm` 类型的变量
                 struct tm display_time;
 
                 // 2. 从您的 g_tm 结构体中，将数据安全地复制到新变量中
@@ -212,13 +198,19 @@ Paint_NewImage(epd_buffer, EPD_2IN13_V2_WIDTH, EPD_2IN13_V2_HEIGHT, 270, WHITE);
             Paint_DrawImage(image_to_display, img_x, img_y, img_w, img_h, BLACK, WHITE);
             //EPD_DrawUTF8(200, 50, 0, buf, EPD_40X80_TABLE, EPD_FontUTF8_16x16, BLACK, WHITE);
              }
-            // 获取并显示MAC地址后六位
-            extern struct bd_addr dev_bdaddr;
-            sprintf((char *)buf2, "MAC: %02X:%02X:%02X:%02X:%02X:%02X",
-            dev_bdaddr.addr[5], dev_bdaddr.addr[4], dev_bdaddr.addr[3],
-            dev_bdaddr.addr[2], dev_bdaddr.addr[1], dev_bdaddr.addr[0]);
-            EPD_DrawUTF8(0, 90, 0, (const char *)buf2, EPD_ASCII_7X12, 0, BLACK, WHITE);
-             // 获取并显示MAC地址后六位     
+            // Hiển thị Ngày Âm lịch thay vì MAC (Sử dụng logic và font mới)
+            struct Lunar_Date lunar;
+            LUNAR_SolarToLunar(&lunar, g_tm.tm_year + YEAR0, g_tm.tm_mon + 1, g_tm.tm_mday);
+            // Tạo chuỗi hiển thị: "Âm lịch: 26-03-2026 (N)" nếu là tháng nhuận
+            if (lunar.IsLeap) {
+                sprintf((char *)buf2, "Am lich: %02d-%02d-%04d (N)", lunar.Date, lunar.Month, lunar.Year);
+            } else {
+                sprintf((char *)buf2, "Am lich: %02d-%02d-%04d", lunar.Date, lunar.Month, lunar.Year);
+            }
+            
+            // Sử dụng font 16x16 đã được Việt hóa
+            EPD_DrawUTF8(0, 90, 0, (const char *)buf2, EPD_ASCII_11X16, EPD_FontUTF8_16x16, BLACK, WHITE);
+            // Kết thúc hiển thị Ngày Âm lịch
 }
 
 void do_time_show_diff_part(void) 
@@ -331,10 +323,10 @@ void do_display_update_with_analog_clock(void)
     }
     EPD_DrawUTF8(212 - 23, 1 + 2, 0, buf, EPD_ASCII_7X12, 0, WHITE, BLACK);
     
-    // 蓝牙连接状态指示
+    // Hiện thị kết nối BLE
     if (isconnected == 1)
     {
-        EPD_DrawUTF8(212 - 10, 90, 0, "B", EPD_ASCII_7X12, 0, WHITE, BLACK);
+        EPD_DrawUTF8(212 - 10, 150, 0, "B", EPD_ASCII_7X12, 0, WHITE, BLACK);
     }
 
     if (g_tm.tm_min == 0)

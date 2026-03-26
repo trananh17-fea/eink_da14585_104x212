@@ -179,11 +179,11 @@ void draw_calendar_with_analog_clock(uint32_t unix_time, bool force_redraw)
         
         // 绘制日历标题
         char title_buf[20];
-        sprintf(title_buf, "%d年%d月", year, month);
-        EPD_DrawUTF8(20, 0, 1, title_buf, EPD_ASCII_11X16, EPD_FontUTF8_16x16, BLACK, WHITE);
+        sprintf(title_buf, "%d / %d", year, month);
+        EPD_DrawUTF8(20, 0, 1, title_buf, EPD_ASCII_11X16, 0, BLACK, WHITE);
         
         // 绘制星期标题行
-        const char* week_names_cn[] = {"日", "一", "二", "三", "四", "五", "六"};
+        const char* week_names_vi[] = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
         uint8_t x_start = 0;
         uint8_t y_pos =20;
         uint8_t cell_width = 15;
@@ -191,7 +191,7 @@ void draw_calendar_with_analog_clock(uint32_t unix_time, bool force_redraw)
         for (uint8_t i = 0; i < 7; i++)
         {
             uint8_t x_pos = x_start + i * cell_width;
-            EPD_DrawUTF8(x_pos + 8, y_pos, 0, week_names_cn[i], EPD_ASCII_7X12, EPD_FontUTF8_16x16, BLACK, WHITE);
+            EPD_DrawUTF8(x_pos + 8, y_pos, 0, week_names_vi[i], EPD_ASCII_7X12, 0, BLACK, WHITE);
         }
         
         // 绘制日历网格

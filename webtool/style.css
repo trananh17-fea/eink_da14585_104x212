@@ -1,0 +1,230 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei",
+    Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #333;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  margin-top: 20px;
+  font-size: 2rem;
+  color: white;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin: 20px 0;
+}
+
+/* Khu vực điều khiển thiết bị */
+.device-control {
+  text-align: center;
+}
+
+/* Cài đặt thông số hình ảnh */
+.image-settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.setting-group label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.setting-group select,
+.setting-group input[type="range"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.setting-group input[type="range"] {
+  padding: 0;
+}
+
+/* Chọn tệp */
+.file-input {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+input[type="file"] {
+  width: 100%;
+  max-width: 300px;
+  font-size: 14px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  transition: all 0.3s;
+}
+
+input[type="file"]:hover {
+  background: #f0f0f0;
+}
+
+/* Kiểu nút */
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+button {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  background: #0078d7;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 120, 215, 0.3);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 120, 215, 0.4);
+}
+
+button:disabled {
+  background: #bbb;
+  color: #eee;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Đảm bảo nút control-btn bị vô hiệu hóa hiển thị màu xám */
+button.control-btn:disabled {
+  background: #bbb;
+  color: #eee;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Hiển thị trạng thái */
+#status {
+  background: #2d3748;
+  color: #48bb78;
+  font-size: 12px;
+  font-family: monospace;
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 120px;
+  text-align: left;
+  overflow-y: auto;
+  margin: 20px 0;
+}
+
+/* Thanh tiến trình */
+#progress {
+  width: 100%;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+#progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4299e1, #48bb78);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* Trình chỉnh sửa mã */
+.code-editor {
+  margin: 20px 0;
+}
+
+.code-editor h3 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+textarea {
+  width: 100%;
+  height: 150px;
+  padding: 12px;
+  font-size: 12px;
+  font-family: monospace;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  resize: vertical;
+  background: #fafafa;
+  transition: all 0.3s;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #0078d7;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0, 120, 215, 0.1);
+}
+
+/* Kiểu nút bổ sung */
+button.generate-btn {
+  background: #48bb78;
+}
+
+button.upload-btn {
+  background: #ed8936;
+}
+
+button.control-btn {
+  background: #667eea;
+}
+
+/* Thiết kế đáp ứng */
+@media (max-width: 600px) {
+  .container {
+    padding: 10px;
+  }
+
+  .buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .image-settings {
+    grid-template-columns: 1fr;
+  }
+}

@@ -21,7 +21,7 @@ static const uint8_t days_in_month[2][12] = {
 };
 
 // 星期名称
-static const char* week_names_cn[] = {"日", "一", "二", "三", "四", "五", "六"};
+static const char* week_names_vi[] = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
 
 /**
  * @brief 获取某月第一天是星期几
@@ -54,7 +54,7 @@ static uint8_t get_days_in_month(uint16_t year, uint8_t month)
 static void draw_calendar_title(uint16_t year, uint8_t month)
 {
     char title_buf[20];
-    sprintf(title_buf, "%d年%d月", year, month);
+    sprintf(title_buf, "%d / %d", year, month);
     
     // 在屏幕顶部居中显示标题
     EPD_DrawUTF8(20, 2, 0, title_buf, EPD_ASCII_11X16, EPD_FontUTF8_16x16, BLACK, WHITE);
@@ -72,7 +72,7 @@ static void draw_week_header(void)
     for (uint8_t i = 0; i < 7; i++)
     {
         uint8_t x_pos = x_start + i * cell_width;
-        EPD_DrawUTF8(x_pos + 8, y_pos, 0, week_names_cn[i], EPD_ASCII_7X12, EPD_FontUTF8_16x16, BLACK, WHITE);
+        EPD_DrawUTF8(x_pos + 8, y_pos, 0, week_names_vi[i], EPD_ASCII_7X12, EPD_FontUTF8_16x16, BLACK, WHITE);
     }
 }
  

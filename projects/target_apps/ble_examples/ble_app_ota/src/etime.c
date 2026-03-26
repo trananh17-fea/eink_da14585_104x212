@@ -39,10 +39,7 @@ void transformTime(uint32_t unix_time, struct devtm *result)
 {
     int leapyr = 0;
     
-    /* * ĐIỀU CHỈNH CHO VIỆT NAM (GMT+7):
-     * 7 giờ * 60 phút * 60 giây = 25.200 giây
-     */
-    uint32_t ltime = unix_time + 25200; 
+    uint32_t ltime = unix_time; 
 
     memset(result, 0, sizeof(struct devtm));
     result->tm_year = EPOCH_YR; // Mặc định là 1970

@@ -378,6 +378,10 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid,
         case SVC2_WRITE_1_VAL:
             user_svc2_wr_ind_handler(msgid, msg_param, dest_id, src_id);
             break;
+
+        case SVC2_WRITE_2_VAL:
+            user_svc1_led_wr_ind_handler(msgid, msg_param, dest_id, src_id);
+            break;
         case SVC3_IDX_READ_1_VAL:
             // user_svc2_wr_ind_handler(msgid, msg_param, dest_id, src_id);
             break;

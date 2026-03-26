@@ -47,6 +47,7 @@ static const uint8_t SVC1_LED_STATE_UUID_128[ATT_UUID_128_LEN] = DEF_SVC1_LED_ST
 static const att_svc_desc128_t custs1_svc2 = DEF_SVC2_UUID_128;
 
 static const uint8_t SVC2_WRITE_VAL_1_UUID_128[ATT_UUID_128_LEN] = DEF_SVC2_WRITE_VAL_1_UUID_128;
+static const uint8_t SVC2_WRITE_VAL_2_UUID_128[ATT_UUID_128_LEN] = DEF_SVC2_WRITE_VAL_2_UUID_128;
 
 // Service 3 of the custom server 1
 static const att_svc_desc128_t custs1_svc3 = DEF_SVC3_UUID_128;
@@ -115,6 +116,18 @@ const struct attm_desc_128 custs1_att_db[CUSTS1_IDX_NB] =
         [SVC2_WRITE_1_USER_DESC] = {(uint8_t *)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE),
                                     sizeof(DEF_SVC2_WRITE_VAL_1_USER_DESC) - 1, sizeof(DEF_SVC2_WRITE_VAL_1_USER_DESC) - 1,
                                     (uint8_t *)DEF_SVC2_WRITE_VAL_1_USER_DESC},
+
+        // Write 2 Characteristic Declaration (1f11 - Image Data)
+        [SVC2_WRITE_2_CHAR] = {(uint8_t *)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},
+
+        // Write 2 Characteristic Value
+        [SVC2_WRITE_2_VAL] = {SVC2_WRITE_VAL_2_UUID_128, ATT_UUID_128_LEN, PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE),
+                              PERM(RI, ENABLE) | DEF_SVC2_WRITE_VAL_2_CHAR_LEN, 0, NULL},
+
+        // Write 2 Characteristic User Description
+        [SVC2_WRITE_2_USER_DESC] = {(uint8_t *)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE),
+                                    sizeof("Image Data") - 1, sizeof("Image Data") - 1,
+                                    (uint8_t *)"Image Data"},
 
         /*************************
          * Service 3 configuration
