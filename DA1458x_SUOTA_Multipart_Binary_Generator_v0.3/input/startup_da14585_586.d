@@ -1,0 +1,1 @@
+..\..\..\..\..\da1458x_suota_multipart_binary_generator_v0.3\input\startup_da14585_586.o: ..\..\..\..\..\sdk\platform\arch\boot\ARM\startup_DA14585_586.s

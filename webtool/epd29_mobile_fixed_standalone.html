@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>2.90电子价签蓝牙控制器 (V3 - 移动端优化版)</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            padding: 20px; 
+            max-width: 800px; 
+            margin: auto;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        button { 
+            padding: 12px 16px; 
+            margin: 8px; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            border: 1px solid #ccc;
+            min-height: 44px;
+            font-size: 16px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .mode-button { 
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+        }
+        .mode-button:hover, .mode-button:active { 
+            background-color: #45a049; 
+        }
+        .mode-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #log { 
+            height: 250px; 
+            overflow-y: scroll; 
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            margin-top: 10px; 
+            white-space: pre-wrap; 
+            background-color: #f9f9f9; 
+        }
+        .section { 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin-top: 20px; 
+            border-radius: 5px; 
+        }
+        h2, h3, h4 { margin-top: 0; }
+        input[type="text"], input[type="number"] { 
+            padding: 8px; 
+            font-size: 16px;
+            min-height: 20px;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>2.90电子价签蓝牙控制器 (移动端优化)</h2>
+
+    <div class="section">
+        <h4>连接控制</h4>
+        <button id="connectButton" type="button">扫描并连接DLG设备</button>
+        <button id="disconnectButton" type="button" disabled>断开连接</button>
+    </div>
+
+    <div class="section">
+        <h4>显示模式控制</h4>
+        <button class="mode-button" type="button" id="timeModeBtn" title="切换到时间显示模式">时间模式</button>
+        <button class="mode-button" type="button" id="calendarModeBtn" title="切换到日历显示模式（模拟时钟）">日历模式（模拟）</button>
+        <button type="button" id="refreshBtn" title="刷新当前显示">刷新显示</button>
+    </div>
+
+    <div class="section">
+        <h4>时间设置</h4>
+        时区偏移: <input type="number" id="hour-offset" value="0" min="-12" max="12" step="1"> 小时  
+
+        <span id="time-setter" style="display: inline-block; margin: 5px 0;">设置时间为：</span>  
+
+        <button type="button" id="setTimeBtn">设置时间</button>
+    </div>
+
+    <div class="section">
+        <h4>底层指令控制</h4>
+        <input type="text" id="cmdTXT" value="0055">
+        <button type="button" id="sendCmdBtn">发送EPD指令</button>
+    </div>
+
+    <h3>日志输出:</h3>
+    <div id="log"></div>
+
+    <script>
+        // === 工具函数 (来自 utils.js) ===
+        function hexToBytes(hex) {
+            for (var bytes = [], c = 0; c < hex.length; c += 2)
+                bytes.push(parseInt(hex.substr(c, 2), 16));
+            return new Uint8Array(bytes);
+        }
+
+        function bytesToHex(data) {
+            return new Uint8Array(data).reduce(
+                function (memo, i) {
+                    return memo + ("0" + i.toString(16)).slice(-2);
+                }, "");
+        }
+
+        function intToHex(intIn, bytes=4) {
+            return intIn.toString(16).padStart(bytes * 2, '0');
+        }
+
+        // === 主要应用代码 ===
+        
+        // --- 全局变量 ---
+        const connectButton = document.getElementById('connectButton');
+        const disconnectButton = document.getElementById('disconnectButton');
+        const logDiv = document.getElementById('log');
+
+        let bleDevice = null;
+        let gattServer = null;
+        let epdCharacteristic = null;
+        let rxtxCharacteristic = null;
+        let isOperating = false; // 防止重复操作
+
+        // --- 移动端兼容性检查 ---
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        function checkBluetoothSupport() {
+            if (!navigator.bluetooth) {
+                log('错误: 此浏览器不支持Web Bluetooth API');
+                if (isMobile()) {
+                    log('提示: 请使用Chrome浏览器，并确保已启用实验性功能');
+                }
+                return false;
+            }
+            return true;
+        }
+
+        // --- 日志函数 ---
+        function log(message) {
+            const now = new Date();
+            const time = now.toLocaleTimeString();
+            logDiv.innerHTML += `[${time}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        // --- 防抖函数 ---
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // --- 添加加载状态 ---
+        function setLoading(element, loading) {
+            if (loading) {
+                element.classList.add('loading');
+                element.disabled = true;
+            } else {
+                element.classList.remove('loading');
+                element.disabled = false;
+            }
+        }
+
+        // --- 蓝牙核心功能 ---
+        async function scanAndConnect() {
+            if (!checkBluetoothSupport()) return;
+            
+            log("开始扫描名称以 'DLG' 开头的设备...");
+            setLoading(connectButton, true);
+            connectButton.textContent = "正在扫描...";
+
+            try {
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'DLG' }],
+                    optionalServices: [
+                        '00001f10-0000-1000-8000-00805f9b34fb',
+                        '13187b10-eba9-a3ba-044e-83d3217d9a38'
+                    ]
+                });
+
+                log(`已选择设备: ${bleDevice.name}`);
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+                log("正在连接到GATT服务器...");
+                gattServer = await bleDevice.gatt.connect();
+                log("GATT服务器已连接！");
+
+                log("正在获取服务和特征...");
+                
+                const epdService = await gattServer.getPrimaryService('13187b10-eba9-a3ba-044e-83d3217d9a38');
+                epdCharacteristic = await epdService.getCharacteristic('4b646063-6264-f3a7-8941-e65356ea82fe');
+                await epdCharacteristic.startNotifications();
+                epdCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
+                    const count = parseInt('0x' + bytesToHex(event.target.value.buffer));
+                    log(`> [来自屏幕]: 收到${count} byte数据`);
+                });
+                log("> EPD服务已就绪。");
+
+                const rxtxService = await gattServer.getPrimaryService('00001f10-0000-1000-8000-00805f9b34fb');
+                rxtxCharacteristic = await rxtxService.getCharacteristic('00001f1f-0000-1000-8000-00805f9b34fb');
+                log("> 串口服务已就绪。");
+
+                log("设备连接成功，所有服务准备就绪！");
+                
+                connectButton.textContent = '已连接';
+                disconnectButton.disabled = false;
+
+            } catch (error) {
+                if (error.name === 'NotFoundError') {
+                    log("扫描操作已取消，或未找到匹配的设备。");
+                } else {
+                    log(`发生错误: ${error.name} - ${error.message}`);
+                }
+                onDisconnected(); 
+            } finally {
+                setLoading(connectButton, false);
+            }
+        }
+
+        function disconnect() {
+            if (gattServer && gattServer.connected) {
+                log("正在断开连接...");
+                gattServer.disconnect();
+            } else {
+                log("已经处于断开状态。");
+                onDisconnected();
+            }
+        }
+
+        function onDisconnected() {
+            log("设备连接已断开。");
+            bleDevice = null;
+            gattServer = null;
+            epdCharacteristic = null;
+            rxtxCharacteristic = null;
+            isOperating = false;
+            
+            setLoading(connectButton, false);
+            connectButton.textContent = '扫描并连接DLG设备';
+            disconnectButton.disabled = true;
+        }
+
+        // --- 改进的命令发送函数 ---
+        async function sendCommand(cmd) {
+            if (isOperating) {
+                log('操作进行中，请稍候...');
+                return false;
+            }
+
+            if (!epdCharacteristic || !gattServer || !gattServer.connected) {
+                log('错误: EPD服务不可用或已断开连接。');
+                return false;
+            }
+
+            try {
+                isOperating = true;
+                await epdCharacteristic.writeValueWithResponse(cmd);
+                return true;
+            } catch (error) {
+                log(`EPD指令发送失败: ${error.message}`);
+                return false;
+            } finally {
+                isOperating = false;
+            }
+        }
+
+        async function rxTxSendCommand(cmd) {
+            if (isOperating) {
+                log('操作进行中，请稍候...');
+                return false;
+            }
+
+            if (!rxtxCharacteristic || !gattServer || !gattServer.connected) {
+                log('错误: 串口服务不可用或已断开连接。');
+                return false;
+            }
+
+            try {
+                isOperating = true;
+                await rxtxCharacteristic.writeValueWithResponse(cmd);
+                return true;
+            } catch (error) {
+                log(`串口指令发送失败: ${error.message}`);
+                return false;
+            } finally {
+                isOperating = false;
+            }
+        }
+
+        // --- 改进的应用功能函数 ---
+        async function setTime() {
+            const setTimeBtn = document.getElementById('setTimeBtn');
+            setLoading(setTimeBtn, true);
+            
+            try {
+                const { unixNow, localeTimeString, year, month, day, week } = getUnixTime();
+                log("开始设置时间为: " + localeTimeString);
+                
+                const success1 = await rxTxSendCommand(hexToBytes('dd' + [intToHex(unixNow, 4), intToHex(year, 2), intToHex(month, 1), intToHex(day, 1), intToHex(week, 1)].join('')));
+                if (success1) {
+                    // 添加延迟确保命令执行完成
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    const success2 = await rxTxSendCommand(hexToBytes('e2'));
+                    if (success2) {
+                        log("时间设置完成！");
+                    }
+                }
+            } catch (error) {
+                log(`时间设置失败: ${error.message}`);
+            } finally {
+                setLoading(setTimeBtn, false);
+            }
+        }
+
+        async function switchToTimeMode() {
+            const btn = document.getElementById('timeModeBtn');
+            setLoading(btn, true);
+            
+            try {
+                log('切换到时间显示模式');
+                const success = await rxTxSendCommand(hexToBytes('e3'));
+                if (success) {
+                    log('时间模式切换成功！');
+                }
+            } catch (error) {
+                log(`模式切换失败: ${error.message}`);
+            } finally {
+                setLoading(btn, false);
+            }
+        }
+
+        async function switchToCalendarAnalogMode() {
+            const btn = document.getElementById('calendarModeBtn');
+            setLoading(btn, true);
+            
+            try {
+                log('切换到日历显示模式（模拟时钟）');
+                const success = await rxTxSendCommand(hexToBytes('e5'));
+                if (success) {
+                    log('日历模式切换成功！');
+                }
+            } catch (error) {
+                log(`模式切换失败: ${error.message}`);
+            } finally {
+                setLoading(btn, false);
+            }
+        }
+
+        async function triggerRxTxCmd(cmd) {
+            const btn = document.getElementById('refreshBtn');
+            setLoading(btn, true);
+            
+            try {
+                log(`发送串口指令: ${cmd}`);
+                const success = await rxTxSendCommand(hexToBytes(cmd));
+                if (success) {
+                    log('指令发送成功！');
+                }
+            } catch (error) {
+                log(`指令发送失败: ${error.message}`);
+            } finally {
+                setLoading(btn, false);
+            }
+        }
+
+        async function triggerEpdCmd(cmd) {
+            const btn = document.getElementById('sendCmdBtn');
+            setLoading(btn, true);
+            
+            try {
+                log(`发送EPD指令: ${cmd}`);
+                const success = await sendCommand(hexToBytes(cmd));
+                if (success) {
+                    log('EPD指令发送成功！');
+                }
+            } catch (error) {
+                log(`EPD指令发送失败: ${error.message}`);
+            } finally {
+                setLoading(btn, false);
+            }
+        }
+
+        function getUnixTime() {
+            const hourOffset = document.getElementById('hour-offset').value;
+            const unixNow = Math.round(Date.now() / 1000) + (60 * 60 * hourOffset) - new Date().getTimezoneOffset() * 60;
+            const date = new Date((unixNow + new Date().getTimezoneOffset() * 60) * 1000);
+            const localeTimeString = date.toLocaleTimeString();
+            return { unixNow, localeTimeString, year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate(), week: date.getDay() || 7 };
+        }
+
+        // --- 移动端优化的事件绑定 ---
+        function addTouchSupport(element, handler) {
+            // 防抖处理
+            const debouncedHandler = debounce(handler, 300);
+            
+            element.addEventListener('click', debouncedHandler);
+            
+            // 移动端触摸支持
+            if (isMobile()) {
+                element.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    debouncedHandler(e);
+                });
+            }
+        }
+
+        // --- 初始化 ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查移动端
+            if (isMobile()) {
+                log('检测到移动设备，已启用移动端优化');
+            }
+
+            // 检查必要函数是否存在
+            if (typeof hexToBytes === 'undefined') {
+                log('错误: hexToBytes函数未定义');
+                return;
+            }
+
+            // 绑定事件
+            addTouchSupport(connectButton, scanAndConnect);
+            addTouchSupport(disconnectButton, disconnect);
+            addTouchSupport(document.getElementById('timeModeBtn'), switchToTimeMode);
+            addTouchSupport(document.getElementById('calendarModeBtn'), switchToCalendarAnalogMode);
+            addTouchSupport(document.getElementById('refreshBtn'), () => triggerRxTxCmd('e2'));
+            addTouchSupport(document.getElementById('setTimeBtn'), setTime);
+            addTouchSupport(document.getElementById('sendCmdBtn'), () => {
+                const cmd = document.getElementById('cmdTXT').value;
+                triggerEpdCmd(cmd);
+            });
+
+            // 时间显示更新
+            setInterval(() => {
+                const { localeTimeString, year, month, day, week } = getUnixTime();
+                document.getElementById('time-setter').innerText = `设置时间为：${year}-${month}-${day} ${localeTimeString} 星期${week}`;
+            }, 1000);
+
+            log('移动端优化版本已加载完成');
+        });
+    </script>
+
+</body>
+</html>
+
