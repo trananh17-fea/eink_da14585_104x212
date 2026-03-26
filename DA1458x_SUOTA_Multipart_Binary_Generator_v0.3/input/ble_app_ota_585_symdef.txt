@@ -1,4 +1,4 @@
-#<SYMDEFS># ARM Linker, 6240002: Last Updated: Thu Mar 26 17:04:43 2026
+#<SYMDEFS># ARM Linker, 6240002: Last Updated: Thu Mar 26 17:17:45 2026
 0x00000000 N _printf_a
 0x00000000 N _printf_c
 0x00000000 N _printf_charcount

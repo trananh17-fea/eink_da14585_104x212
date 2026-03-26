@@ -1,20 +1,20 @@
 /**
- ****************************************************************************************
+ * ****************************************************************************************
  *
  * @file user_custs1_impl.c
  *
- * @brief Peripheral project Custom1 Server implementation source code.
+ * @brief Mã nguồn thực thi Server Custom1 cho dự án ngoại vi.
  *
- * Copyright (C) 2015-2019 Dialog Semiconductor.
- * This computer program includes Confidential, Proprietary Information
- * of Dialog Semiconductor. All Rights Reserved.
+ * Bản quyền (C) 2015-2019 Dialog Semiconductor.
+ * Chương trình máy tính này bao gồm Thông tin Bảo mật, Độc quyền
+ * của Dialog Semiconductor. Bảo lưu mọi quyền.
  *
- ****************************************************************************************
+ * ****************************************************************************************
  */
 
 /*
- * INCLUDE FILES
- ****************************************************************************************
+ * CÁC FILE INCLUDE
+ * ****************************************************************************************
  */
 
 #include "gpio.h"
@@ -45,8 +45,8 @@
 #include "custom_drawing.h"
 
 /*
- * GLOBAL VARIABLE DEFINITIONS
- ****************************************************************************************
+ * ĐỊNH NGHĨA BIẾN TOÀN CỤC
+ * ****************************************************************************************
  */
 #define APP_PERIPHERAL_CTRL_TIMER_DELAY 10
 #define APP_PERIPHERAL_CTRL_TIMER_DELAY_MINUTES 6000
@@ -59,27 +59,27 @@
 #define IMG_HEADER_ADDRESS 0x20000
 
 typedef enum {
-    DISPLAY_MODE_TIME = 0,    // 时间显示模式
-    DISPLAY_MODE_CALENDAR = 1, // 日历显示模式
-    DISPLAY_MODE_CALENDAR_ANALOG = 2 // 日历显示模式（模拟时钟）
+    DISPLAY_MODE_TIME = 0,    // Chế độ hiển thị thời gian
+    DISPLAY_MODE_CALENDAR = 1, // Chế độ hiển thị lịch
+    DISPLAY_MODE_CALENDAR_ANALOG = 2 // Chế độ hiển thị lịch (đồng hồ kim)
 } display_mode_t;
 
 // 添加全局变量来跟踪上次更新时间（用于判断是否需要强制重绘）
 static uint32_t last_update_time __SECTION_ZERO("retention_mem_area0");
 static uint8_t last_minute __SECTION_ZERO("retention_mem_area0");
 
-/// Image header
+/// Header của hình ảnh
 typedef struct
 {
-    /// Signature
+    /// Chữ ký (Signature)
     uint8_t signature[2];
-    /// Valid; set to STATUS_VALID_IMAGE at the end of the image update
+    /// Hợp lệ; được đặt thành STATUS_VALID_IMAGE khi kết thúc quá trình cập nhật ảnh
     uint8_t validflag;
-    /// ID to determine which image is the newest one
+    /// ID để xác định hình ảnh nào là mới nhất
     uint8_t imageid;
-    /// Image size
+    /// Kích thước hình ảnh
     uint32_t code_size;
-    /// Image CRC
+    /// CRC của hình ảnh
     uint32_t CRC;
 } img_header_t;
 img_header_t imgheader __SECTION_ZERO("retention_mem_area0");
@@ -108,60 +108,60 @@ uint8_t dev_id __SECTION_ZERO("retention_mem_area0");
 
 static void spi_flash_peripheral_init(void)
 {
-    // Release the SPI flash memory from power down
+    // Giải phóng bộ nhớ SPI flash khỏi chế độ ngắt nguồn (power down)
     spi_flash_release_from_power_down();
 
-    // Disable the SPI flash memory protection (unprotect all sectors)
+    // Vô hiệu hóa bảo vệ bộ nhớ SPI flash (bỏ bảo vệ tất cả các sector)
     spi_flash_configure_memory_protection(SPI_FLASH_MEM_PROT_NONE);
 
-    // Try to auto-detect the SPI flash memory
+    // Thử tự động phát hiện bộ nhớ SPI flash
     spi_flash_auto_detect(&dev_id);
     EPD_CS_H;
 }
 
-// 定义图片尺寸和缓冲区大小
+// Định nghĩa kích thước hình ảnh và kích thước buffer
 #define IMAGE_WIDTH  70
 #define IMAGE_HEIGHT 70
 #define IMAGE_BUFFER_SIZE ((IMAGE_WIDTH * IMAGE_HEIGHT + 7) / 8)
- // 定义图片缓冲区
+ // Định nghĩa buffer hình ảnh
 UBYTE Image_Buffer[IMAGE_BUFFER_SIZE];
- // 声明在 image_data.c 中定义的图片数据
+ // Khai báo dữ liệu hình ảnh được định nghĩa trong image_data.c
 //extern const unsigned char custom_image[]; 
 void DisplayCustomImage(void)
  {
     Paint_NewImage(Image_Buffer, IMAGE_WIDTH, IMAGE_HEIGHT, ROTATE_0, WHITE);
-    // 3. 选择当前要操作的图像缓冲区
+    // 3. Chọn buffer hình ảnh hiện tại để thao tác
     Paint_SelectImage(Image_Buffer);
-    Paint_Clear(WHITE); // 清空为白色背景
+    Paint_Clear(WHITE); // Xóa về nền trắng
     Paint_DrawBitMap(gImage_heavy_rain_32);
     EPD_2IN13_V2_Display(Image_Buffer);
 }
-// 添加全局变量来存储当前显示模式
+// Thêm biến toàn cục để lưu trữ chế độ hiển thị hiện tại
 uint8_t current_display_mode __SECTION_ZERO("retention_mem_area0");  // = DISPLAY_MODE_TIME;
 
 void do_time_show_diff(void)
 {
-// 定义图片绘制的坐标和尺寸
-const UWORD img_x = 140; // 图片绘制的起始X坐标
-const UWORD img_y = 20;  // 图片绘制的起始Y坐标
-const UWORD img_w = 70;  // 图片宽度
-const UWORD img_h = 70;  // 图片高度
+// Định nghĩa tọa độ và kích thước vẽ hình ảnh
+const UWORD img_x = 140; // Tọa độ X bắt đầu vẽ ảnh
+const UWORD img_y = 20;  // Tọa độ Y bắt đầu vẽ ảnh
+const UWORD img_w = 70;  // Chiều rộng ảnh
+const UWORD img_h = 70;  // Chiều cao ảnh
 Paint_NewImage(epd_buffer, EPD_2IN13_V2_WIDTH, EPD_2IN13_V2_HEIGHT, 270, WHITE);
             Paint_SelectImage(epd_buffer);
             Paint_SetMirroring(MIRROR_VERTICAL);
             Paint_Clear(WHITE);
 
-            sprintf(buf, "%d-%02d-%02d", g_tm.tm_mday,g_tm.tm_mon + 1, g_tm.tm_year + YEAR0);                   //年月日
+            sprintf(buf, "%d-%02d-%02d", g_tm.tm_mday,g_tm.tm_mon + 1, g_tm.tm_year + YEAR0);                   // Ngày-Tháng-Năm
             EPD_DrawUTF8(5, 1, 1, buf, EPD_ASCII_11X16, EPD_FontUTF8_16x16, BLACK, WHITE);
-            sprintf(buf, "%s", WEEK_VN[g_tm.tm_wday]);                                                        //星期
+            sprintf(buf, "%s", WEEK_VN[g_tm.tm_wday]);                                                        // Thứ
             EPD_DrawUTF8(5 + 125, 1, 1, buf, EPD_ASCII_11X16, EPD_FontUTF8_16x16, BLACK, WHITE);
             {
                 struct tm display_time;
 
-                // 2. 从您的 g_tm 结构体中，将数据安全地复制到新变量中
+                // 2. Từ cấu trúc g_tm, sao chép dữ liệu an toàn sang biến mới
                 display_time.tm_hour = g_tm.tm_hour;
                 display_time.tm_min  = g_tm.tm_min;
-                // 其他成员我们不关心，可以不进行赋值
+                // Các thành phần khác không quan trọng, có thể không gán giá trị
                 Draw_Time_String(5, 30, &display_time, 25, 50, BLACK); 
             }
              // 创建一个指针，用于指向要显示的图片数据
@@ -191,17 +191,17 @@ Paint_NewImage(epd_buffer, EPD_2IN13_V2_WIDTH, EPD_2IN13_V2_HEIGHT, 270, WHITE);
                 image_to_display = gImage_rest;
                 //sprintf(buf, "星期%s", WEEKCN[g_tm.tm_wday]); 
             }
-             // 如果找到了要显示的图片，就调用GUI函数绘制它
+             // Nếu tìm thấy hình ảnh cần hiển thị, gọi hàm GUI để vẽ nó
             if (image_to_display != NULL) {
-            // 使用 Paint_DrawImage 函数将选定的图片绘制到屏幕缓冲区的指定位置
-            // 参数：图片数据, X坐标, Y坐标, 宽度, 高度, 前景色, 背景色
+            // Sử dụng hàm Paint_DrawImage để vẽ hình ảnh đã chọn vào vị trí chỉ định trên buffer màn hình
+            // Tham số: dữ liệu ảnh, tọa độ X, tọa độ Y, chiều rộng, chiều cao, màu tiền cảnh, màu hậu cảnh
             Paint_DrawImage(image_to_display, img_x, img_y, img_w, img_h, BLACK, WHITE);
             //EPD_DrawUTF8(200, 50, 0, buf, EPD_40X80_TABLE, EPD_FontUTF8_16x16, BLACK, WHITE);
              }
             // Hiển thị Ngày Âm lịch thay vì MAC (Sử dụng logic và font mới)
             struct Lunar_Date lunar;
             LUNAR_SolarToLunar(&lunar, g_tm.tm_year + YEAR0, g_tm.tm_mon + 1, g_tm.tm_mday);
-            // Tạo chuỗi hiển thị: "Âm lịch: 26-03-2026 (N)" nếu là tháng nhuận
+            // Tạo chuỗi hiển thị: "Am lich: 26-03-2026 (N)" nếu là tháng nhuận
             if (lunar.IsLeap) {
                 sprintf((char *)buf2, "Am lich: %02d-%02d-%04d (N)", lunar.Date, lunar.Month, lunar.Year);
             } else {
@@ -216,56 +216,56 @@ Paint_NewImage(epd_buffer, EPD_2IN13_V2_WIDTH, EPD_2IN13_V2_HEIGHT, 270, WHITE);
 void do_time_show_diff_part(void) 
 {
     char min_buf[3]; 
-    // 重新选择图像缓冲区，但不需要重新初始化或清空整个缓冲区 
+    // Chọn lại buffer hình ảnh, nhưng không cần khởi tạo lại hoặc xóa toàn bộ buffer 
     Paint_SelectImage(epd_buffer); 
     Paint_SetMirroring(MIRROR_VERTICAL); 
 
-    // 根据小时数的位数，确定分钟数字的起始X坐标
+    // Dựa trên số chữ số của giờ, xác định tọa độ X bắt đầu của số phút
     UWORD min_x_start;
     if (g_tm.tm_hour < 10) 
     {
-        // 小时为一位数时，分钟的X坐标是 10 + 86 + 20 - 30 = 86
+        // Khi giờ có một chữ số, tọa độ X của phút là 10 + 86 + 20 - 30 = 86
         min_x_start = 86;
     } else { 
-        // 小时为两位数时，分钟的X坐标是 10 + 86 + 20 = 116
+        // Khi giờ có hai chữ số, tọa độ X của phút là 10 + 86 + 20 = 116
         min_x_start = 116;
     }
 
-    // 分钟数字的Y坐标是 20 + 2 = 22
+    // Tọa độ Y của số phút là 20 + 2 = 22
     UWORD min_y_start = 22;
-    // 分钟数字的宽度是 2个字符 * 40像素/字符 = 80像素
+    // Chiều rộng của số phút là 2 ký tự * 40 pixel/ký tự = 80 pixel
     UWORD min_width = 80;
-    // 分钟数字的高度是 80像素
+    // Chiều cao của số phút là 80 pixel
     UWORD min_height = 80;
 
-    // 擦除旧的分钟数字区域
+    // Xóa vùng hiển thị số phút cũ
     Paint_ClearWindows(min_x_start, min_y_start, min_x_start + min_width, min_y_start + min_height, WHITE); 
 
-    // 重新绘制分钟数字 
+    // Vẽ lại số phút mới 
     sprintf(min_buf, "%02d", g_tm.tm_min);
     EPD_DrawUTF8(min_x_start, min_y_start, 5, min_buf, EPD_40X80_TABLE, EPD_FontUTF8_24x24, BLACK, WHITE);
 }
 
 /**
- * @brief 修改后的显示更新函数，支持模拟时钟
+ * @brief Hàm cập nhật hiển thị sau khi sửa đổi, hỗ trợ đồng hồ kim
  */
 void do_display_update_with_analog_clock(void)
 {
     transformTime(current_unix_time, &g_tm);
     
-    // 判断是否需要强制重绘
+    // Phán đoán xem có cần buộc phải vẽ lại toàn bộ không
     bool force_redraw = false;
     
-    // 如果是第一次显示或者小时发生变化，强制重绘
+    // Nếu là lần đầu hiển thị hoặc giờ thay đổi, buộc phải vẽ lại
     if (last_update_time == 0 || 
-        (current_unix_time - last_update_time) > 3600 || // 超过1小时
-        g_tm.tm_min == 0) // 整点时刻
+        (current_unix_time - last_update_time) > 3600 || // Quá 1 giờ
+        g_tm.tm_min == 0) // Thời điểm sang giờ mới
     {
         force_redraw = true;
         last_update_time = current_unix_time;
     }
     
-    // 如果分钟发生变化，需要更新指针
+    // Nếu phút thay đổi, cần cập nhật kim đồng hồ
     bool minute_changed = (last_minute != g_tm.tm_min);
     if (minute_changed)
     {
@@ -275,18 +275,18 @@ void do_display_update_with_analog_clock(void)
     switch (current_display_mode)
     {
         case DISPLAY_MODE_TIME:
-            // 原有的时间显示逻辑
+            // Logic hiển thị thời gian ban đầu
             //do_time_show_diff();
                 if (force_redraw) {
-                do_time_show_diff(); // 全屏重绘 
+                do_time_show_diff(); // Vẽ lại toàn bộ màn hình 
                 } else if (minute_changed) {
-                do_time_show_diff(); // 全屏重绘 
-                //    do_time_show_diff_part(); // 局部刷新分钟数字 
+                do_time_show_diff(); // Vẽ lại toàn bộ màn hình 
+                //    do_time_show_diff_part(); // Làm mới cục bộ vùng số phút 
             }
             break;
             
         case DISPLAY_MODE_CALENDAR:
-            // 原有的日历显示逻辑（数字时钟）
+            // Logic hiển thị lịch ban đầu (đổi hồ số)
             Paint_NewImage(epd_buffer, EPD_2IN13_V2_WIDTH, EPD_2IN13_V2_HEIGHT, 270, WHITE);
             Paint_SelectImage(epd_buffer);
             Paint_SetMirroring(MIRROR_VERTICAL);
@@ -294,22 +294,22 @@ void do_display_update_with_analog_clock(void)
             break;
             
         case DISPLAY_MODE_CALENDAR_ANALOG:
-            // 新的日历显示逻辑（模拟时钟）
+            // Logic hiển thị lịch mới (đồng hồ kim)
             Paint_NewImage(epd_buffer, EPD_2IN13_V2_WIDTH, EPD_2IN13_V2_HEIGHT, 270, WHITE);
             Paint_SelectImage(epd_buffer);
             Paint_SetMirroring(MIRROR_VERTICAL);
-            // 使用新的模拟时钟日历函数
+            // Sử dụng hàm lịch đồng hồ kim mới
             draw_calendar_with_analog_clock(current_unix_time, force_redraw || minute_changed);
             break;
             
         default:
-            // 默认使用时间显示
+            // Mặc định sử dụng hiển thị thời gian
             current_display_mode = DISPLAY_MODE_TIME;
-            do_display_update_with_analog_clock(); // 递归调用
+            do_display_update_with_analog_clock(); // Gọi đệ quy
             return;
     }
     
-    // 添加电池电量显示（所有模式通用）
+    // Thêm hiển thị dung lượng pin (chung cho tất cả các chế độ)
     Paint_DrawRectangle(212 - 24, 6 + 2, 296 - 24 + 2, 8 + 2 + 2, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
     Paint_DrawRectangle(212 - 22, 1 + 2, 295, 20 - 5 + 2, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
     sprintf(buf, "%d", cur_batt_level);
@@ -338,8 +338,8 @@ void do_display_update_with_analog_clock(void)
 
 
 /*
- * FUNCTION DEFINITIONS
- ****************************************************************************************
+ * ĐỊNH NGHĨA HÀM (FUNCTION DEFINITIONS)
+ * ****************************************************************************************
  */
 void do_img_save(void)
 {
@@ -368,12 +368,13 @@ void do_img_save(void)
         // arch_printf("status3:%d\n",status);
         // arch_printf("epd_buffer wr:%d size:%d\n", actual_size,sizeof(epd_buffer));
         // }
+        // Đưa SPI flash vào chế độ cực thấp điện năng (ultra deep power down)
         spi_flash_ultra_deep_power_down();
     }
 }
 
 /**
- * @brief 修改后的分钟工作函数
+ * @brief Hàm công việc mỗi phút sau khi sửa đổi
  */
 void do_min_work_with_analog_clock(void)
 {
@@ -383,7 +384,7 @@ void do_min_work_with_analog_clock(void)
     
     arch_printf("current_unix_time:%d\n", current_unix_time);
     
-    // 使用新的显示更新函数
+    // Sử dụng hàm cập nhật hiển thị mới
     do_display_update_with_analog_clock();
     
     if (step == 0)
@@ -401,7 +402,7 @@ void my_app_on_db_init_complete(void)
     CALLBACK_ARGS_0(user_default_app_operations.default_operation_adv)
     arch_printf("my_app_on_db_init_complete_modified\n");
     
-    // 初始化显示模式为时间显示
+    // Khởi tạo chế độ hiển thị là hiển thị thời gian
     current_display_mode = DISPLAY_MODE_TIME;
     last_update_time = 0;
     last_minute = 255;
@@ -549,14 +550,14 @@ void user_svc1_led_wr_ind_handler(ke_msg_id_t const msgid,
     }
     switch (param->value[0])
     {
-    // Clear EPD display.
+    // Xóa màn hình EPD.
     case 0x00:
         ASSERT_MIN_LEN(payload_len, 2);
         // memset(epd_buffer, payload[1], epd_buffer_size);
         // memset(epd_temp, payload[1], epd_buffer_size);
 
         return;
-    // Push buffer to display.
+    // Đẩy buffer lên màn hình để hiển thị.
     case 0x01:
         // EPD_Display(epd_buffer, epd_temp, epd_buffer_size, payload[1]);
         arch_printf("start EPD_Display\r\n");
@@ -571,12 +572,12 @@ void user_svc1_led_wr_ind_handler(ke_msg_id_t const msgid,
 
         app_easy_timer(APP_PERIPHERAL_CTRL_TIMER_DELAY, display);
         return;
-    // Set byte_pos.
+    // Đặt byte_pos (vị trí ghi dữ liệu).
     case 0x02:
         ASSERT_MIN_LEN(payload_len, 3);
         byte_pos = payload[1] << 8 | payload[2];
         return;
-    // Write data to image buffer.
+    // Ghi dữ liệu vào buffer hình ảnh.
     case 0x03:
         if ((payload[2] << 8 | payload[3]) + payload_len - 4 >= epd_buffer_size + 1)
         {
@@ -593,7 +594,7 @@ void user_svc1_led_wr_ind_handler(ke_msg_id_t const msgid,
         out_buffer[1] = payload_len & 0xff;
         bls_att_pushNotifyData(SVC1_IDX_LED_STATE_VAL, out_buffer, 2);
         return;
-    case 0x04: // decode & display a TIFF image
+    case 0x04: // Giải mã và hiển thị hình ảnh TIFF
         // param_update_request(1);
         return;
     case 0xAA:
@@ -617,7 +618,7 @@ void user_svc1_led_wr_ind_handler(ke_msg_id_t const msgid,
 }
 
 /**
- * @brief 修改后的串口命令处理函数，添加模拟时钟模式切换
+ * @brief Hàm xử lý lệnh ghi cổng nối tiếp (Custom Service 2) đã sửa đổi, thêm chuyển đổi chế độ đồng hồ kim
  */
 void user_svc2_wr_ind_handler(ke_msg_id_t const msgid,
                               struct custs1_val_write_ind const *param,
@@ -633,7 +634,7 @@ void user_svc2_wr_ind_handler(ke_msg_id_t const msgid,
     
     if ((param->value[0] == 0xDD) && (param->length >= 5))
     {
-        // 时间设置逻辑保持不变
+        // Logic thiết lập thời gian giữ nguyên
         current_unix_time = (param->value[1] << 24) + (param->value[2] << 16) + (param->value[3] << 8) + (param->value[4] & 0xff);
         tm_t tm = {0};
         transformTime(current_unix_time, &tm);
@@ -641,7 +642,7 @@ void user_svc2_wr_ind_handler(ke_msg_id_t const msgid,
         time_offset = 60 - tm.tm_sec;
         timer_used_min = app_easy_timer(time_offset * 100, do_min_work_with_analog_clock);
         
-        // 重置更新时间，强制重绘
+        // Đặt lại thời gian cập nhật, buộc vẽ lại
         last_update_time = 0;
         
         arch_printf("%d-%02d-%02d %02d:%02d:%02d %d\n", tm.tm_year + YEAR0,
@@ -662,8 +663,8 @@ void user_svc2_wr_ind_handler(ke_msg_id_t const msgid,
     }
     else if (param->value[0] == 0xE2)
     {
-        // 刷新当前显示模式
-        last_update_time = 0; // 强制重绘
+        // Làm mới chế độ hiển thị hiện tại
+        last_update_time = 0; // Buộc vẽ lại
         do_display_update_with_analog_clock();
         is_part = 0;
         step = 1;
@@ -671,9 +672,9 @@ void user_svc2_wr_ind_handler(ke_msg_id_t const msgid,
     }
     else if (param->value[0] == 0xE3)
     {
-        // 切换到时间显示模式
+        // Chuyển sang chế độ hiển thị thời gian
         current_display_mode = DISPLAY_MODE_TIME;
-        last_update_time = 0; // 强制重绘
+        last_update_time = 0; // Buộc vẽ lại
         do_display_update_with_analog_clock();
         is_part = 0;
         step = 1;
@@ -682,9 +683,9 @@ void user_svc2_wr_ind_handler(ke_msg_id_t const msgid,
     }
     else if (param->value[0] == 0xE4)
     {
-        // 切换到日历显示模式（数字时钟）
+        // Chuyển sang chế độ hiển thị lịch (đồng hồ số)
         current_display_mode = DISPLAY_MODE_CALENDAR;
-        last_update_time = 0; // 强制重绘
+        last_update_time = 0; // Buộc vẽ lại
         do_display_update_with_analog_clock();
         is_part = 0;
         step = 1;
@@ -693,9 +694,9 @@ void user_svc2_wr_ind_handler(ke_msg_id_t const msgid,
     }
     else if (param->value[0] == 0xE5)
     {
-        // 新增：切换到日历显示模式（模拟时钟）
+        // Thêm mới: Chuyển sang chế độ hiển thị lịch (đồng hồ kim)
         current_display_mode = DISPLAY_MODE_CALENDAR_ANALOG;
-        last_update_time = 0; // 强制重绘
+        last_update_time = 0; // Buộc vẽ lại
         do_display_update_with_analog_clock();
         is_part = 0;
         step = 1;
@@ -705,32 +706,10 @@ void user_svc2_wr_ind_handler(ke_msg_id_t const msgid,
 }
 
 
-void user_svc1_long_val_cfg_ind_handler(ke_msg_id_t const msgid,
-                                        struct custs1_val_write_ind const *param,
-                                        ke_task_id_t const dest_id,
-                                        ke_task_id_t const src_id)
-{
-    // Generate indication when the central subscribes to it
-    // if (param->value[0])
-    // {
-    //     uint8_t conidx = KE_IDX_GET(src_id);
-
-    //     struct custs1_val_ind_req *req = KE_MSG_ALLOC_DYN(CUSTS1_VAL_IND_REQ,
-    //                                                       prf_get_task_from_id(TASK_ID_CUSTS1),
-    //                                                       TASK_APP,
-    //                                                       custs1_val_ind_req,
-    //                                                       sizeof(indication_counter));
-
-    //     req->conidx = app_env[conidx].conidx;
-    //     req->handle = SVC1_IDX_INDICATEABLE_VAL;
-    //     req->length = sizeof(indication_counter);
-    //     req->value[0] = (indication_counter >> 8) & 0xFF;
-    //     req->value[1] = indication_counter & 0xFF;
-
-    //     indication_counter++;
-
-    //     ke_msg_send(req);
-    // }
+void user_svc1_long_val_cfg_ind_handler(
+    ke_msg_id_t const msgid, struct custs1_val_write_ind const *param,
+    ke_task_id_t const dest_id, ke_task_id_t const src_id) {
+  
 }
 
 void user_svc1_long_val_wr_ind_handler(ke_msg_id_t const msgid,
