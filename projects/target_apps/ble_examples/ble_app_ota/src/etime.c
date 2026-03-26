@@ -1,6 +1,9 @@
 #include "etime.h"
 
-uint32_t SEC_PER_YR[2] = {31536000, 31622400}; // 闰年和非闰年的秒数
+// Số giây trong một năm: [0] Năm thường, [1] Năm nhuận
+uint32_t SEC_PER_YR[2] = {31536000, 31622400}; 
+
+// Số giây trong từng tháng (Năm thường và Năm nhuận)
 uint32_t SEC_PER_MT[2][12] = {
     {2678400, 2419200, 2678400, 2592000, 2678400, 2592000,
      2678400, 2678400, 2592000, 2678400, 2592000, 2678400},
@@ -9,84 +12,77 @@ uint32_t SEC_PER_MT[2][12] = {
 };
 
 /**
- * @Name       : static int is_leap(int yr)
- * @Description: 判断是否为闰年
- * 				"非整百年份：能被4整除的是闰年。"
- * 				"整百年份：能被400整除的是闰年。"
- * @In         : 待机算的年份
- * @Out        : 1：是闰年   0：非闰年
- * @Author     : Denis
+ * Kiểm tra năm nhuận
  */
 int is_leap(int yr)
 {
-    if (NULL == (yr % 100))
+    if (0 == (yr % 100))
         return (yr % 400 == 0) ? 1 : 0;
     else
         return (yr % 4 == 0) ? 1 : 0;
 }
 
 /**
- * @Name       : static unsigned char day_of_week_get(unsigned char month, unsigned char day,
-                                     unsigned short year)
- * @Description: 根据输入的年月日计算当天为星期几
- * @In         : 年、月、日
- * @Out        : 星期几
- * @Author     : Denis
+ * Tính thứ trong tuần (Sakamoto's algorithm)
  */
-unsigned char day_of_week_get(unsigned char month, unsigned char day,
-                              unsigned short year)
+unsigned char day_of_week_get(unsigned char month, unsigned char day, unsigned short year)
 {
-    /* Month should be a number 0 to 11, Day should be a number 1 to 31 */
-
     static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
     year -= (uint8_t)(month < 3);
     return (year + year / 4 - year / 100 + year / 400 + t[month - 1] + day) % 7;
 }
+
+/**
+ * Chuyển đổi Unix Timestamp sang giờ Việt Nam (GMT+7)
+ */
 void transformTime(uint32_t unix_time, struct devtm *result)
 {
     int leapyr = 0;
-    /*默认将Unix时间戳转换为东八区时间信息，8×60×60=28800*/
-    uint32_t ltime = unix_time;
+    
+    /* * ĐIỀU CHỈNH CHO VIỆT NAM (GMT+7):
+     * 7 giờ * 60 phút * 60 giây = 25.200 giây
+     */
+    uint32_t ltime = unix_time + 25200; 
 
     memset(result, 0, sizeof(struct devtm));
-    result->tm_year = EPOCH_YR;
+    result->tm_year = EPOCH_YR; // Mặc định là 1970
 
+    // Tính năm
     while (1)
     {
-        if (ltime < SEC_PER_YR[is_leap(result->tm_year)])
-        {
-            break;
-        }
-        ltime -= SEC_PER_YR[is_leap(result->tm_year)];
+        uint32_t sec_in_this_yr = SEC_PER_YR[is_leap(result->tm_year)];
+        if (ltime < sec_in_this_yr) break;
+        
+        ltime -= sec_in_this_yr;
         ++(result->tm_year);
     }
 
+    // Tính tháng
     leapyr = is_leap(result->tm_year);
-
     while (1)
     {
-        if (ltime < SEC_PER_MT[leapyr][result->tm_mon])
-            break;
+        if (ltime < SEC_PER_MT[leapyr][result->tm_mon]) break;
+        
         ltime -= SEC_PER_MT[leapyr][result->tm_mon];
         ++(result->tm_mon);
     }
 
-    result->tm_mday = ltime / SEC_PER_DY;
+    // Tính ngày (1 ngày = 86400 giây)
+    result->tm_mday = ltime / 86400; 
     ++(result->tm_mday);
-    ltime = ltime % SEC_PER_DY;
+    ltime = ltime % 86400;
 
-    result->tm_hour = ltime / SEC_PER_HR;
-    ltime = ltime % SEC_PER_HR;
+    // Tính giờ
+    result->tm_hour = ltime / 3600;
+    ltime = ltime % 3600;
 
+    // Tính phút và giây
     result->tm_min = ltime / 60;
     result->tm_sec = ltime % 60;
 
-    result->tm_wday =
-        day_of_week_get(result->tm_mon + 1, result->tm_mday,
-                        result->tm_year);
+    // Tính thứ (0: Chủ Nhật, 1: Thứ 2...)
+    result->tm_wday = day_of_week_get(result->tm_mon + 1, result->tm_mday, result->tm_year);
 
-    /*
-     * The number of years since YEAR0"
-     */
+    // Trừ đi mốc YEAR0 (thường là 1900) nếu cấu trúc yêu cầu
     result->tm_year -= YEAR0;
 }

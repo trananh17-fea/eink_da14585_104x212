@@ -1,47 +1,36 @@
 /*****************************************************************************
-* | File      	:   EPD_2in13_V2.h
-* | Author      :   Waveshare team
-* | Function    :   2.13inch e-paper V2
-* | Info        :
-*----------------
-* |	This version:   V3.0
-* | Date        :   2019-06-13
-* | Info        :
-* -----------------------------------------------------------------------------
-* V3.0(2019-06-13):
-* 1. Thay đổi tên hàm:
-*    EPD_Reset() => EPD_2IN13_V2_Reset()
-*    EPD_SendCommand() => EPD_2IN13_V2_SendCommand()
-*    EPD_SendData() => EPD_2IN13_V2_SendData()
-*    EPD_WaitUntilIdle() => EPD_2IN13_V2_ReadBusy()
-*    EPD_Init() => EPD_2IN13_V2_Init()
-*    EPD_Clear() => EPD_2IN13_V2_Clear()
-*    EPD_Display() => EPD_2IN13_V2_Display()
-*    EPD_Sleep() => EPD_2IN13_V2_Sleep()
-* 2. Thêm hàm:
-*    EPD_2IN13_V2_DisplayPartBaseImage()
-* -----------------------------------------------------------------------------
-* V2.0(2018-11-14):
-* 1. Loại bỏ: ImageBuff[EPD_HEIGHT * EPD_WIDTH / 8]
-* 2. Thay đổi: EPD_2IN13_V2_Display(UBYTE *Image)
-*    Cần truyền tham số: con trỏ đến dữ liệu cache
-* 3. Thay đổi hằng số chân:
-*    EPD_RST -> EPD_RST_PIN
-*    EPD_DC -> EPD_DC_PIN
-*    EPD_CS -> EPD_CS_PIN
-*    EPD_BUSY -> EPD_BUSY_PIN
-#
-# Giấy phép này cho phép bất kỳ ai nhận được bản sao của phần mềm này
-# và các tệp tài liệu liên quan đều được quyền xử lý phần mềm mà không hạn chế,
-# bao gồm nhưng không giới hạn ở quyền sử dụng, sao chép, sửa đổi, hợp nhất,
-# xuất bản, phân phối, cấp phép con và/hoặc bán các bản sao của phần mềm.
-#
-# Thông báo bản quyền trên và thông báo cho phép này phải được bao gồm trong
-# tất cả các bản sao hoặc phần quan trọng của phần mềm.
-#
-# PHẦN MỀM ĐƯỢC CUNG CẤP "NGUYÊN TRẠNG", KHÔNG CÓ BẤT KỲ ĐẢM BẢO NÀO.
-#
-******************************************************************************/
+ * | File      	:   EPD_2in13_V2.h
+ * | Author      :   Waveshare team
+ * | Function    :   2.13inch e-paper V2
+ * | Info        :
+ *----------------
+ * |	This version:   V3.0
+ * | Date        :   2019-06-13
+ * | Info        :
+ * -----------------------------------------------------------------------------
+ * V3.0(2019-06-13):
+ * 1. Thay đổi tên hàm:
+ *    EPD_Reset() => EPD_2IN13_V2_Reset()
+ *    EPD_SendCommand() => EPD_2IN13_V2_SendCommand()
+ *    EPD_SendData() => EPD_2IN13_V2_SendData()
+ *    EPD_WaitUntilIdle() => EPD_2IN13_V2_ReadBusy()
+ *    EPD_Init() => EPD_2IN13_V2_Init()
+ *    EPD_Clear() => EPD_2IN13_V2_Clear()
+ *    EPD_Display() => EPD_2IN13_V2_Display()
+ *    EPD_Sleep() => EPD_2IN13_V2_Sleep()
+ * 2. Thêm hàm:
+ *    EPD_2IN13_V2_DisplayPartBaseImage()
+ * -----------------------------------------------------------------------------
+ * V2.0(2018-11-14):
+ * 1. Loại bỏ: ImageBuff[EPD_HEIGHT * EPD_WIDTH / 8]
+ * 2. Thay đổi: EPD_2IN13_V2_Display(UBYTE *Image)
+ *    Cần truyền tham số: con trỏ đến dữ liệu cache
+ * 3. Thay đổi hằng số chân:
+ *    EPD_RST -> EPD_RST_PIN
+ *    EPD_DC -> EPD_DC_PIN
+ *    EPD_CS -> EPD_CS_PIN
+ *    EPD_BUSY -> EPD_BUSY_PIN
+ ******************************************************************************/
 #ifndef _EPD_2IN13_V2_H_
 #define _EPD_2IN13_V2_H_
 #include "gpio.h"

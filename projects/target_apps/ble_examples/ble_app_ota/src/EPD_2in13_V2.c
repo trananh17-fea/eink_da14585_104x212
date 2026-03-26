@@ -31,16 +31,6 @@
 *    EPD_CS -> EPD_CS_PIN
 *    EPD_BUSY -> EPD_BUSY_PIN
 #
-# Giấy phép này cho phép bất kỳ ai nhận được bản sao của phần mềm này
-# và các tệp tài liệu liên quan đều được quyền xử lý phần mềm mà không hạn chế,
-# bao gồm nhưng không giới hạn ở quyền sử dụng, sao chép, sửa đổi, hợp nhất,
-# xuất bản, phân phối, cấp phép con và/hoặc bán các bản sao của phần mềm.
-#
-# Thông báo bản quyền trên và thông báo cho phép này phải được bao gồm trong
-# tất cả các bản sao hoặc phần quan trọng của phần mềm.
-#
-# PHẦN MỀM ĐƯỢC CUNG CẤP "NGUYÊN TRẠNG", KHÔNG CÓ BẤT KỲ ĐẢM BẢO NÀO.
-#
 ******************************************************************************/
 #include "EPD_2in13_V2.h"
 #include "Debug.h"
@@ -97,22 +87,6 @@ void EPD_GPIO_init(void){
 
 void DEV_SPI_WriteByte(uint8_t sdbyte)
 {
-    // uint8_t i;
-    // for (i = 0; i < 8; i++)
-    // {
-    //     EPD_SCLK_L;
-    //     if (sdbyte & 0x80)
-    //     {
-    //         EPD_SDI_H;
-    //     }
-    //     else
-    //     {
-    //         EPD_SDI_L;
-    //     }
-    //     sdbyte <<= 1;
-    //     EPD_SCLK_H;
-    // }
-    // EPD_SCLK_L;
     spi_access(sdbyte);
 }
 
@@ -325,21 +299,21 @@ void EPD_2IN13_V2_Init(UBYTE Mode)
 void EPD_SetWindow(uint16_t x, uint8_t y_x8, uint16_t x_size, uint8_t y_size_x8) {
    
     x = EPD_2IN13_V2_HEIGHT - 1 - x;
-    x_size = x - x_size + 1;          /* x_size已变为x结束地址 */
-    y_size_x8 = y_size_x8 + y_x8 - 1; /* y_size已变为y结束地址 */
+    x_size = x - x_size + 1;          
+    y_size_x8 = y_size_x8 + y_x8 - 1;
 
-    EPD_2IN13_V2_SendCommand(0x44); /* 设置X（短边）起始地址和结束地址，根据扫描方式不同，地址设置也不同 */
+    EPD_2IN13_V2_SendCommand(0x44);
     EPD_2IN13_V2_SendData(y_x8);
     EPD_2IN13_V2_SendData(y_size_x8 & 0xFF);
-    EPD_2IN13_V2_SendCommand(0x45); /* 设置Y（长边）起始地址和结束地址，根据扫描方式不同，地址设置也不同 */
+    EPD_2IN13_V2_SendCommand(0x45);
     EPD_2IN13_V2_SendData(x & 0xFF);
     EPD_2IN13_V2_SendData(0);
     EPD_2IN13_V2_SendData(x_size & 0xFF);
     EPD_2IN13_V2_SendData(0);
 
-    EPD_2IN13_V2_SendCommand(0x4E); /* 设置X（短边）地址计数器 */
+    EPD_2IN13_V2_SendCommand(0x4E);
     EPD_2IN13_V2_SendData(y_x8);
-    EPD_2IN13_V2_SendCommand(0x4F); /* 设置Y（长边）地址计数器 */
+    EPD_2IN13_V2_SendCommand(0x4F);
     EPD_2IN13_V2_SendData(x & 0xFF);
     EPD_2IN13_V2_SendData(0);
 }
